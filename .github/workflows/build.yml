@@ -1,0 +1,30 @@
+name: Build Images
+
+on:
+  workflow_dispatch:  # 只允许手动触发（最简单！）
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build backend
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/cultivation-backend:latest -f deploy/Dockerfile.backend .
+          docker push ghcr.io/${{ github.repository_owner }}/cultivation-backend:latest
+
+      - name: Build frontend
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/cultivation-frontend:latest -f deploy/Dockerfile.frontend .
+          docker push ghcr.io/${{ github.repository_owner }}/cultivation-frontend:latest
